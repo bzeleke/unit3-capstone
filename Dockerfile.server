@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y --no-install-recommends                 ca-certificates curl && rm -rf /var/lib/apt/lists/*
+ENV PIP_NO_CACHE_DIR=1
+RUN python -m pip install --upgrade pip &&                 python -m pip install --no-cache-dir --only-binary=:all: sentencepiece==0.2.0 &&                 python -m pip install --no-cache-dir numpy==1.26.4 &&                 python -m pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch==2.2.2 &&                 python -m pip install --no-cache-dir                     huggingface_hub==0.14.1 tokenizers==0.13.3 transformers==4.30.2                     sentence-transformers==2.2.2 Flask==3.1.1
+RUN python -c "from sentence_transformers import SentenceTransformer as S; m=S('sentence-transformers/all-MiniLM-L6-v2'); m.save('/opt/model'); print('Cached /opt/model')"
+ENV MODEL_PATH=/opt/model
+WORKDIR /app
+COPY server_app.py /app/server_app.py
+EXPOSE 8080
+CMD ["python","server_app.py"]
